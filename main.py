@@ -1,13 +1,6 @@
-import requests
+from av_by import extract_cars_list as extract_av_cars
+from kufar import extract_cars_list as extract_kufar_cars
+from pprint import pprint
 
-headers = {
-    'Host': 'cars.av.by',
-    'User-Agent': 'Google', #
-    'Accept': '*/*', #
-    'Accept-Encoding': 'gzip, deflate, br', #
-    'Connection': 'keep-alive' #
-}
 
-av_request = requests.get('https://cars.av.by/volkswagen/polo', headers=headers)
-print(av_request.text)
 
