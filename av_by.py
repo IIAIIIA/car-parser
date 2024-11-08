@@ -17,8 +17,8 @@ headers = {
 }
 
 
-def extract_max_pages():
-    av_request = requests.get(URL, headers=headers)
+def extract_max_pages(url=URL):
+    av_request = requests.get(url, headers=headers)
     av_soup = BeautifulSoup(av_request.text, 'html.parser')
     paginator = av_soup.find('div', {'class': 'paging__text'}).string.split()[-1]
     return math.ceil(int(paginator) / 25)
@@ -36,10 +36,11 @@ def to_int(text):
     return int(re.sub(r'\D', '', text))
 
 
-def extract_cars(last_page):
+def extract_cars(last_page, url=URL):
     cars = []
     for page in range(last_page):
-        car_page = requests.get(f'{URL}&page={page + 1}', headers=headers)
+        print(f'av.by - парсинг страницы {page + 1}')
+        car_page = requests.get(f'{url}&page={page + 1}', headers=headers)
         car_page_html = BeautifulSoup(car_page.text, 'html.parser')
         # car_list = soup.find_all('div', {'class': 'listing-top'}) + soup.find_all('div', {'class': 'listing-item'})
         car_container_list = car_page_html.find_all('div', {'class': 'listing-item'})
@@ -47,12 +48,12 @@ def extract_cars(last_page):
             car_params = car_container.find('div', {'class': 'listing-item__params'}).find_all('div')
             car = {
                 'title': clean_text(car_container.find('span', {'class': 'link-text'})),
-                'link': 'https://cars.av.by' + car_container.find('a', {'class': 'listing-item__link'})['href'],
                 'price': clean_text(car_container.find('div', {'class': 'listing-item__price'})),
+                'mileage': clean_text(car_params[2]),
                 'year': clean_text(car_params[0]),
                 'description': clean_text(car_params[1]),
-                'mileage': clean_text(car_params[2]),
-                'place': clean_text(car_container.find('div', {'class': 'listing-item__location'}))
+                'place': clean_text(car_container.find('div', {'class': 'listing-item__location'})),
+                'link': 'https://cars.av.by' + car_container.find('a', {'class': 'listing-item__link'})['href']
             }
             cars.append(car)
     return cars

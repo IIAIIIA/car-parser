@@ -12,7 +12,7 @@ headers = {
 }
 
 
-def get_page(url=URL):
+def get_page(url):
     page = requests.get(url, headers=headers)
     return BeautifulSoup(page.text, 'html.parser')
 
@@ -27,12 +27,12 @@ def get_cars(html_text, cars_list):
         car_params = car_cart.find('div', {'class': 'styles_description__RTkd2'}).find_all('p')
         car = {
             'title': clean_text(car_cart.find('h3', {'class': 'styles_info__title__7LPbu'})),
-            'link': car_cart['href'],
             'price': clean_text(car_cart.find('div', {'class': 'styles_info__price___5fsJ'}).find('span')),
+            'mileage': clean_text(car_params[2]),
             'year': clean_text(car_params[0]),
             'description': clean_text(car_params[1]),
-            'mileage': clean_text(car_params[2]),
-            'place': clean_text(car_cart.find('div', {'class': 'styles_info__region__BGH1o'}))
+            'place': clean_text(car_cart.find('div', {'class': 'styles_info__region__BGH1o'})),
+            'link': car_cart['href']
         }
         cars_list.append(car)
     return cars_list
@@ -40,11 +40,12 @@ def get_cars(html_text, cars_list):
 
 def extract_cars(link):
     cars_list = []
-    cars_list = get_cars(get_page(), cars_list)
     while True:
-        current_page_number = get_page(link).find('span', {'class': 'styles_active__GRR1D'}).text
-        cars_list = get_cars(get_page(link), cars_list)
-        next_page_link = get_page(link).find('a',
+        page_soup = get_page(link)
+        current_page_number = page_soup.find('span', {'class': 'styles_active__GRR1D'}).text
+        print(f"kufar.by - парсинг страницы {current_page_number}")
+        cars_list = get_cars(page_soup, cars_list)
+        next_page_link = page_soup.find('a',
                                              {'data-testid': f'auto-pagination-page-{int(current_page_number) + 1}'})
         if not next_page_link:
             break
@@ -54,5 +55,4 @@ def extract_cars(link):
 
 
 def extract_cars_list():
-    link = 'https://auto.kufar.by' + get_page().find('a', {'class': 'styles_link__8m3I9'})['href']
-    return extract_cars(link)
+    return extract_cars(URL)
